@@ -14,8 +14,8 @@ Créez un Active Directory vulnérable qui vous permet de tester la plupart des 
 - Objets utilisateur avec mot de passe par défaut (Changeme123 !)
 - Pulvérisation de mot de passe
 - DCSync
-- Billet Argent
-- Billet d'or
+- Billet Argent (silver ticket) kerberos
+- Billet d'or (golden ticket) kerberos
 - Passez le hachage
 - Passez le billet
 - Signature SMB désactivée
