@@ -1,42 +1,38 @@
 <h1 align="center">
-  Vulnerable-AD
+  Vulnerabilités ACTIVE DIRECTORY
   <br>
 </h1>
 
-Create a vulnerable active directory that's allowing you to test most of active directory attacks in local lab
+Créez un Active Directory vulnérable qui vous permet de tester la plupart des attaques Active Directory dans un laboratoire local, ceci fait suite à mon dépot github https://github.com/sbeteta42/import_bulk_Users-Groupes_OU_ActiveDirectory
 
-### Main Features
-- Randomize Attacks
-- Full Coverage of the mentioned attacks
-- you need run the script in DC with Active Directory installed 
-- Some of attacks require client workstation
-  
-### Supported Attacks
-- Abusing ACLs/ACEs
-- Kerberoasting
-- AS-REP Roasting
-- Abuse DnsAdmins
-- Password in Object Description
-- User Objects With Default password (Changeme123!)
-- Password Spraying
+### Attaques prises en charge
+- Abuser des ACL/ACE
+- Kerbéroastre
+- Torréfaction AS-REP
+- Abuser des administrateurs DNS
+- Mot de passe dans la description de l'objet
+- Objets utilisateur avec mot de passe par défaut (Changeme123 !)
+- Pulvérisation de mot de passe
 - DCSync
-- Silver Ticket
-- Golden Ticket 
-- Pass-the-Hash
-- Pass-the-Ticket
-- SMB Signing Disabled
+- Billet Argent
+- Billet d'or
+- Passez le hachage
+- Passez le billet
+- Signature SMB désactivée
 
-### Example
+
+### Caractéristiques principales
+- Randomiser les attaques
+- Couverture complète des attaques mentionnées
+- vous devez exécuter le script dans le DC avec Active Directory installé
+- Certaines attaques nécessitent un poste client
+
+### Exemple
 ```powershell
-# if you didn't install Active Directory yet , you can try 
-Install-windowsfeature AD-domain-services
-Import-Module ADDSDeployment
-Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "C:\\Windows\\NTDS" -DomainMode "7" -DomainName "cs.org" -DomainNetbiosName "cs" -ForestMode "7" -InstallDns:$true -LogPath "C:\\Windows\\NTDS" -NoRebootOnCompletion:$false -SysvolPath "C:\\Windows\\SYSVOL" -Force:$true
-# if you already installed Active Directory, just run the script !
-IEX((new-object net.webclient).downloadstring("https://raw.githubusercontent.com/wazehell/vulnerable-AD/master/vulnad.ps1"));
-Invoke-VulnAD -UsersLimit 100 -DomainName "cs.org"
+# si vous n'avez pas encore installé Active Directory: Installer la fonctionnalité Windows des services de domaine AD
+Module d'importation ADDSDeployment
+Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "C:\\Windows\\NTDS" -DomainMode "7" -DomainName "formation.lan" -DomainNetbiosName "formation" -ForestMode "7" -InstallDns:$true -LogPath " C:\\Windows\\NTDS" -NoRebootOnCompletion:$false -SysvolPath "C:\\Windows\\SYSVOL" -Force:$true
+# si vous avez déjà installé Active Directory, exécutez simplement le script !
+IEX((nouvel-objet net.webclient).downloadstring("https://raw.githubusercontent.com/wazehell/vulnerable-AD/master/vulnad.ps1"));
+Invoke-VulnAD -UsersLimit 100 -DomainName "formation.lan"
 ```
-
-### TODO
-- Play with workstations !
-- Click close issue button on github
