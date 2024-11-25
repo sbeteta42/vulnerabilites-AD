@@ -33,6 +33,6 @@ Créez un Active Directory vulnérable qui vous permet de tester la plupart des 
 Module d'importation ADDSDeployment
 Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "C:\\Windows\\NTDS" -DomainMode "7" -DomainName "formation.lan" -DomainNetbiosName "formation" -ForestMode "7" -InstallDns:$true -LogPath " C:\\Windows\\NTDS" -NoRebootOnCompletion:$false -SysvolPath "C:\\Windows\\SYSVOL" -Force:$true
 # si vous avez déjà installé Active Directory, exécutez simplement le script !
-IEX((new-objet net.webclient).downloadstring("https://raw.githubusercontent.com/sbeteta42/vulnerable-AD/master/vulnad.ps1"));
+IEX((new-object net.webclient).downloadstring("https://raw.githubusercontent.com/sbeteta42/vulnerable-AD/master/vulnad.ps1"));
 Invoke-VulnAD -UsersLimit 100 -DomainName "formation.lan"
 ```
