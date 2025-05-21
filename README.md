@@ -27,7 +27,7 @@ Créez un Active Directory vulnérable qui vous permet de tester la plupart des 
 - vous devez exécuter le script dans le DC avec Active Directory installé
 - Certaines attaques nécessitent un poste client
 
-### Exemple
+### Utilisation sur Microsft Windows Server
 ```powershell
 # si vous n'avez pas encore installé Active Directory: Installer la fonctionnalité Windows des services de domaine AD
 Module d'importation ADDSDeployment
