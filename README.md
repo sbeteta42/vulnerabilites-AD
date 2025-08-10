@@ -1,5 +1,5 @@
 <h1>
-# ![AD Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Windows_Domain_Controller_Logo.png/200px-Windows_Domain_Controller_Logo.png)  Vulnerabilités Active Directory 🔓
+# Vulnerabilités Active Directory 🔓
 </h1>
 Crée un Active Directory vulnérable pour tester la majorité des attaques AD courantes dans un lab local, en complément de mon dépôt [import_bulk_Users-Groupes_OU_ActiveDirectory](https://github.com/sbeteta42/import_bulk_Users-Groupes_OU_ActiveDirectory).
 
