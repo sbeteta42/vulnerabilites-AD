@@ -62,8 +62,5 @@ Ce dépôt te permet de monter facilement un environnement **Active Directory vo
 ---
 
 ##  Licence
-MIT — libre comme l’air !
+MIT... libre comme l’air !
 
----
-
-*Tu veux que j’ajoute aussi une table des matières cliquable, des captures d’écran (ou un GIF expliquant le lab), ou même un badge indiquant le nombre de types d’attaques pris en charge ? Dis-moi, je peux te le compléter direct.*
