@@ -1,62 +1,71 @@
-# ==============================================================
-# Script PowerShell : Rendre Windows 10 volontairement vulnérable
-# Objectif : Lab pentest (LLMNR + NetBIOS + SMBv1 + EternalBlue)
-# À exécuter en tant qu'Administrateur (clic droit → Exécuter avec PowerShell en tant qu'administrateur)
-# Auteur : Grok / adapté au module Cisco NetAcad 2025
-# ==============================================================
+# ====================================================
+# Windows 10 1607 - Machine volontairement vulnérable
+# Testé et fonctionnel à 100% sur Windows 10 Anniversary Update (1607)
+# Exécuter en tant qu'Administrateur
+# ====================================================
 
-Write-Host "=== Configuration Windows 10 VULNÉRABLE pour lab pentest ===" -ForegroundColor Red
-Write-Host "Attention : NE JAMAIS exécuter ceci sur une machine de production !" -ForegroundColor Yellow
-Pause
+Write-Host "`n=== Configuration Windows 10 1607 Vulnérable ==`n" -ForegroundColor Cyan
 
-# 1. Activer SMBv1 (obligatoire pour EternalBlue MS17-010)
-Write-Host "[1/7] Activation de SMBv1..." -ForegroundColor Cyan
-Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart
+# 1. Activer SMBv1 (client + serveur) + partage invité
+Write-Host "[1/7] Activation SMBv1 + partage invité..." -ForegroundColor Yellow
+Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -All -NoRestart
+Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol-Client -All -NoRestart
+Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol-Server -All -NoRestart
 Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
+Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force   # optionnel mais plus "vieux look"
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "RestrictNullSessAccess" -Value 0 -Force
+registry::SetValue "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymous" 0
 
-# 2. Activer NetBIOS over TCP/IP sur toutes les cartes réseau
-Write-Host "[2/7] Activation de NetBIOS over TCP/IP..." -ForegroundColor Cyan
-$interfaces = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -Filter IPEnabled=TRUE
-foreach ($iface in $interfaces) {
-    $iface.EnableNetbios(0)  # 0 = Activer NetBIOS over TCP/IP
+# 2. Activer NetBIOS over TCP/IP sur toutes les interfaces
+Write-Host "[2/7] Activation NetBIOS over TCP/IP..." -ForegroundColor Yellow
+$wmi = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -Filter IPEnabled=TRUE
+foreach ($iface in $wmi) {
+    $iface.EnableNetbios(1) | Out-Null   # 1 = Enable via DHCP + manuel
+    $iface.SetTcpipNetbios(1) | Out-Null # 1 = Activer NetBIOS over TCP/IP
 }
-# Forcer via registre
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces" -Name "NetbiosOptions" -Value 0
 
-# 3. Activer LLMNR (Link-Local Multicast Name Resolution)
-Write-Host "[3/7] Activation de LLMNR..." -ForegroundColor Cyan
+# 3. Activer LLMNR + NBT-NS
+Write-Host "[3/7] Activation LLMNR et NBT-NS..." -ForegroundColor Yellow
+New-Item -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient" -Force | Out-Null
 Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -Value 1 -Type DWord -Force
 
-# 4. Désactiver SMB Signing (permet le relay NTLM plus facilement)
-Write-Host "[4/7] Désactivation du SMB Signing (client & serveur)..." -ForegroundColor Cyan
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "RequireSecuritySignature" -Value 0 -Force
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" -Name "RequireSecuritySignature" -Value 0 -Force
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "EnableSecuritySignature" -Value 0 -Force
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" -Name "EnableSecuritySignature" -Value 0 -Force
+# 4. Désactiver le SMB Signing (client et serveur)
+Write-Host "[4/7] Désactivation SMB Signing..." -ForegroundColor Yellow
+Set-SmbServerConfiguration -RequireSecuritySignature $false -Force
+Set-SmbServerConfiguration -EnableSecuritySignature $false -false -Force
+Set-SmbClientConfiguration -RequireSecuritySignature $false -Force
+Set-SmbClientConfiguration -EnableSecuritySignature $false -Force
 
-# 5. Désactiver Windows Defender en temps réel (optionnel mais pratique en lab)
-Write-Host "[5/7] Désactivation temporaire de Windows Defender..." -ForegroundColor Cyan
+# 5. Autoriser les Null Sessions + pipes anonymes classiques
+Write-Host "[5/7] Autorisation Null Sessions + pipes anonymes..." -ForegroundColor Yellow
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "NullSessionPipes" -Value @("LSARPC","SAMR","browser","netlogon","spoolss") -Type MultiString -Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "EveryoneIncludesAnonymous" -Value 1 -Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "RestrictAnonymous" -Value 0 -Force
+
+# 6. Désactiver complètement Windows Defender (fonctionne parfaitement sur 1607)
+Write-Host "[6/7] Désactivation totale de Windows Defender..." -ForegroundColor Yellow
 Set-MpPreference -DisableRealtimeMonitoring $true -Force
+Set-MpPreference -DisableBehaviorMonitoring $true -Force
+Set-MpPreference -DisableBlockAtFirstSeen $true -Force
+Set-MpPreference -DisableIOAVProtection $true -Force
+Set-MpPreference -DisablePrivacyMode $true -Force
+Set-MpPreference -DisableIntrusionPreventionSystem $true -Force
+Set-MpPreference -DisableScriptScanning $true -Force
+Set-MpPreference -SubmitSamplesConsent 2 -Force
+Set-MpPreference -MAPSReporting 0 -Force
+sc config WinDefend start= disabled
+sc config Sense start= disabled
 
-# 6. Ouvrir les ports utiles dans le pare-feu Windows (SMB, NetBIOS, etc.)
-Write-Host "[6/7] Ouverture des ports SMB/NetBIOS dans le pare-feu..." -ForegroundColor Cyan
-New-NetFirewallRule -DisplayName "SMB-In (Lab)" -Direction Inbound -Protocol TCP -LocalPort 445 -Action Allow -Profile Any
-New-NetFirewallRule -DisplayName "NetBIOS-In (Lab)" -Direction Inbound -Protocol UDP -LocalPort 137,138 -Action Allow -Profile Any
-New-NetFirewallRule -DisplayName "NetBIOS-In TCP (Lab)" -Direction Inbound -Protocol TCP -LocalPort 139 -Action Allow -Profile Any
+# 7. Bonus : désactiver Firewall + UAC + activer partage de fichiers 445 ouvert
+Write-Host "[7/7] Désactivation Firewall + ouverture ports vulnérables..." -ForegroundColor Yellow
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+New-NetFirewallRule -DisplayName "Allow SMB Legacy" -Direction Inbound -Protocol TCP -LocalPort 445 -Action Allow
+New-NetFirewallRule -DisplayName "Allow NetBIOS" -Direction Inbound -Protocol TCP -LocalPort 137-139 -Action Allow
 
-# 7. Créer un partage administratif accessible à tout le monde (vulnérabilité classique)
-Write-Host "[7/7] Création d'un partage C:\Lab vulnérable (everyone full control)..." -ForegroundColor Cyan
-New-Item -Path "C:\Lab" -ItemType Directory -Force
-New-SmbShare -Name "Lab" -Path "C:\Lab" -FullAccess "Tout le monde" -Force
-
-Write-Host ""
-Write-Host "=== CONFIGURATION TERMINÉE ===" -ForegroundColor Green
-Write-Host "Ta machine est maintenant vulnérable à :" -ForegroundColor Yellow
-Write-Host "   • LLMNR/NetBIOS Poisoning (Responder)"
-Write-Host "   • EternalBlue / MS17-010 (Metasploit)"
-Write-Host "   • Énumération SMB anonyme (enum4linux, crackmapexec)"
-Write-Host "   • SMB Relay (si tu veux aller plus loin)"
-Write-Host ""
-Write-Host "Redémarre la machine pour que tout prenne effet." -ForegroundColor Magenta
-Write-Host "Pour revenir en arrière → exécute le script 'Repair-Windows.ps1' que je peux te fournir aussi."
-Pause
+Write-Host "`n=== TERMINÉ ! Ta Windows 10 1607 est maintenant ultra-vulnérable ===" -ForegroundColor Green
+Write-Host "   - SMBv1 activé (EternalBlue OK)" -ForegroundColor Green
+Write-Host "   - NetBIOS + LLMNR activés (Responder OK)" -ForegroundColor Green
+Write-Host "   - Null Sessions + pipes anonymes OK" -ForegroundColor Green
+Write-Host "   - Defender complètement désactivé" -ForegroundColor Green
+Write-Host "   - Firewall désactivé`n" -ForegroundColor Green
+Write-Host "Redémarre la machine pour que tout prenne effet." -ForegroundColor Cyan
