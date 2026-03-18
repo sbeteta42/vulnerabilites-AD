@@ -7,7 +7,7 @@ Crée un Active Directory vulnérable pour tester la majorité des attaques AD c
 
 ---
 
-## ​ Attaques prises en charge
+## 🔥 Attaques prises en charge
 - Abus d’ACL/ACE  
 - Kerberoasting  
 - AS-REP Roasting  
@@ -23,7 +23,7 @@ Crée un Active Directory vulnérable pour tester la majorité des attaques AD c
 
 ---
 
-## ​ Principales fonctionnalités
+## 📋 Principales fonctionnalités
 - Génération aléatoire des attaques pour diversifier les exercices  
 - Couvre tous les scénarios listés ci-dessus  
 - À lancer directement **sur le contrôleur de domaine (DC)** avec AD installé  
@@ -31,7 +31,7 @@ Crée un Active Directory vulnérable pour tester la majorité des attaques AD c
 
 ---
 
-##  Utilisation (PowerShell Windows Server)
+## ⚙️ Utilisation (PowerShell Windows Server)
 1. **Si tu n’as pas encore AD installé :**
     ```powershell
     Import-Module ADDSDeployment
@@ -56,11 +56,11 @@ Crée un Active Directory vulnérable pour tester la majorité des attaques AD c
 
 ---
 
-##  À propos
+## 👨‍💻 À propos
 Ce dépôt te permet de monter facilement un environnement **Active Directory volontairement vulnérable**, parfait pour les labs de sécurité, pentests internes ou TP. Il suit la logique de mon dépôt [import_bulk_Users-Groupes_OU_ActiveDirectory](https://github.com/sbeteta42/import_bulk_Users-Groupes_OU_ActiveDirectory).
 
 ---
 
-##  Licence
+## 🙏 Licence
 MIT... libre comme l’air !
 
